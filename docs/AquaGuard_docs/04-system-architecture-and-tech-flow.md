@@ -73,15 +73,15 @@ failure.
 ## 4.2 Backend and API layer
 
 The backend is a **Node.js 20 + Express 4** application (CommonJS) with a single
-entry point, [`backend/index.js`](../backend/index.js). It wires up CORS, JSON
+entry point, [`backend/index.js`](../../backend/index.js). It wires up CORS, JSON
 parsing, per-route rate limiters, the REST routers, a health-check endpoint, and —
 on the *same* HTTP server — the native WebSocket server.
 
 **Architectural style.** The API is deliberately lightweight and has **no ORM and
 no service/model layer**. Business logic lives inline in the route handlers under
-[`backend/routes/`](../backend/routes/), and all persistence is **raw parameterised
+[`backend/routes/`](../../backend/routes/), and all persistence is **raw parameterised
 SQL** against a single shared `pg` connection pool exported by
-[`backend/db.js`](../backend/db.js). Two shared singletons are imported everywhere
+[`backend/db.js`](../../backend/db.js). Two shared singletons are imported everywhere
 and never re-instantiated: the Postgres pool (`db.js`) and the Redis client
 (`redisClient.js`).
 
@@ -104,7 +104,7 @@ and never re-instantiated: the Postgres pool (`db.js`) and the Redis client
   network) and requests with no `Origin` header (native mobile apps, curl,
   Postman).
 - **Rate limiting** — an in-memory, per-IP limiter
-  ([`middleware/rateLimit.js`](../backend/middleware/rateLimit.js)) applied
+  ([`middleware/rateLimit.js`](../../backend/middleware/rateLimit.js)) applied
   selectively to sensitive endpoints: login (10 / 15 min), registration
   (5 / 15 min), forgot-password (5 / 15 min) and admin broadcasts (20 / min).
 - **A consistent response envelope** — handlers return
@@ -114,7 +114,7 @@ and never re-instantiated: the Postgres pool (`db.js`) and the Redis client
 ### 4.2.1 Data model
 
 The canonical schema lives in
-[`infrastructure/database/init_db.sql`](../infrastructure/database/init_db.sql),
+[`infrastructure/database/init_db.sql`](../../infrastructure/database/init_db.sql),
 which the Postgres container auto-runs on first boot; incremental changes are raw
 SQL files under `backend/migrations/`. PostgreSQL is the **system of record** for
 everything except live GPS.
@@ -169,7 +169,7 @@ tracking session; the fast-moving updates in between live in Redis (see §4.3.2)
 ### 4.2.2 Authentication and authorization
 
 **Authentication** is phone + password with **stateless JWTs**
-([`backend/routes/auth.js`](../backend/routes/auth.js)):
+([`backend/routes/auth.js`](../../backend/routes/auth.js)):
 
 1. On **registration**, the password is hashed with `bcrypt` (salted) and stored as
    `password_hash`; the plaintext is never persisted. Registering as `rescuer` or
@@ -187,7 +187,7 @@ SMS OTP for phone verification / password reset, itself protected by an in-proce
 per-number rate limit.
 
 **Authorization** is role-based, enforced by middleware in
-[`backend/middleware/auth.js`](../backend/middleware/auth.js):
+[`backend/middleware/auth.js`](../../backend/middleware/auth.js):
 
 - `authMiddleware` verifies the Bearer token and sets `req.user` to **only**
   `{ id, phone_number, role }` — deliberately minimal; a handler that needs the
@@ -212,7 +212,7 @@ WebSocket server co-located with the REST API, backed by a Redis hot store.
 
 ### 4.3.1 WebSocket transport
 
-The real-time layer is a native [`ws`](../backend/index.js) `WebSocketServer`
+The real-time layer is a native [`ws`](../../backend/index.js) `WebSocketServer`
 attached to the **same HTTP server** as Express (`http.createServer(app)`), so REST
 and WebSocket share a single port and a single TLS termination — no separate
 gateway to operate.
@@ -276,7 +276,7 @@ updates never hit the relational database, while PostgreSQL always retains a
 
 Every rescue request moves through a well-defined **state machine**, enforced by
 the `status` column's `CHECK` constraint and by guarded SQL updates in
-[`backend/routes/sos.js`](../backend/routes/sos.js):
+[`backend/routes/sos.js`](../../backend/routes/sos.js):
 
 ```
    (citizen creates)
@@ -358,10 +358,10 @@ positions) is always safe in PostgreSQL, so a reconnect fully restores the sessi
 ## 4.4 Frontend: web platform
 
 The web client is a **React 19 + Vite 6 single-page application**
-([`frontend/`](../frontend/), ESM), styled with **Tailwind CSS v4** and routed with
+([`frontend/`](../../frontend/), ESM), styled with **Tailwind CSS v4** and routed with
 **React Router DOM 7**.
 
-**Application shell.** [`App.jsx`](../frontend/src/App.jsx) composes a tree of
+**Application shell.** [`App.jsx`](../../frontend/src/App.jsx) composes a tree of
 context providers whose nesting order matters: `AuthProvider` wraps
 `LiveLocationProvider` (which needs the token to open its socket), inside
 `ToastProvider` and `NotificationProvider`, all under an `ErrorBoundary`. A single
@@ -380,7 +380,7 @@ protected `/` route renders a role-aware `Dashboard`; `/login`,
   tracking socket used by the tracking-map modal.
 
 **Role-scoped UI.** Pages live under
-[`pages/{admin,rescuer,citizen}/`](../frontend/src/pages/) and are gated by
+[`pages/{admin,rescuer,citizen}/`](../../frontend/src/pages/) and are gated by
 `components/auth/ProtectedRoute.jsx` (RBAC on the client, mirroring the server's
 role checks). Citizens raise and track SOS requests; rescuers see team missions and
 accept/complete them; admins get dispatch, analytics, and broadcast tools.

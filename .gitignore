@@ -39,3 +39,9 @@ CLAUDE.md
 .claude/
 # Firmware cảm biến — chứa WiFi password + device key
 hardware/esp32-water-level/config.py
+
+# GeoRescue local datasets, generated results, and Python environment
+/georescue/data/
+/georescue/outputs/
+/georescue/.venv/
+/georescue/**/__pycache__/
